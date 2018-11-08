@@ -1,5 +1,7 @@
 package com.kkaysheva.photogallery.pojo;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * GalleryItem
  *
@@ -8,9 +10,12 @@ package com.kkaysheva.photogallery.pojo;
  */
 public class GalleryItem {
 
-    private String caption;
-    private String id;
-    private String url;
+    @SerializedName("title")
+    public String caption;
+    @SerializedName("id")
+    public String id;
+    @SerializedName("url_s")
+    public String url;
 
     public String getCaption() {
         return caption;

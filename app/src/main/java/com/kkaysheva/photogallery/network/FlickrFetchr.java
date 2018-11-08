@@ -3,6 +3,8 @@ package com.kkaysheva.photogallery.network;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.kkaysheva.photogallery.pojo.GalleryItem;
 
 import org.json.JSONArray;
@@ -40,6 +42,18 @@ public class FlickrFetchr {
                 continue;
             }
             item.setUrl(photoJsonObject.getString("url_s"));
+            items.add(item);
+        }
+    }
+
+    private void parseItemsWithGson(List<GalleryItem> items, JSONObject jsonBody) throws IOException, JSONException {
+        JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
+        JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
+        Gson gson = new Gson();
+        for (int index = 0; index < photoJsonArray.length(); index++) {
+            JSONObject photoJsonObject = photoJsonArray.getJSONObject(index);
+            Log.i(TAG, photoJsonObject.toString());
+            GalleryItem item = gson.fromJson(photoJsonObject.toString(), GalleryItem.class);
             items.add(item);
         }
     }
@@ -82,7 +96,7 @@ public class FlickrFetchr {
                     .build().toString();
             String jsonString = getUrlString(url);
             JSONObject jsonBody = new JSONObject(jsonString);
-            parseItems(items, jsonBody);
+            parseItemsWithGson(items, jsonBody);
             Log.i(TAG, "Received json : " + jsonString);
         } catch (IOException e) {
             Log.e(TAG, "Failed to fetch items", e);
