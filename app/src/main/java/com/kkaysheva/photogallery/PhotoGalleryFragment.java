@@ -1,5 +1,6 @@
 package com.kkaysheva.photogallery;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,18 +11,41 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kkaysheva.photogallery.adapter.PhotoAdapter;
+import com.kkaysheva.photogallery.network.FlickrFetchr;
+import com.kkaysheva.photogallery.pojo.GalleryItem;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * PhotoGalleryFragment
+ *
+ * @author Ksenya Kaysheva (murrcha@me.com)
+ * @since 08.11.2018
+ */
 public class PhotoGalleryFragment extends Fragment {
 
+    private static final String TAG = "PhotoGalleryFragment";
+
     private RecyclerView recyclerView;
+    private List<GalleryItem> galleryItems = new ArrayList<>();
 
     public static PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
+    }
+
+    private void setupAdapter() {
+        if (isAdded()) {
+            recyclerView.setAdapter(new PhotoAdapter(galleryItems));
+        }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        new FetchItemsTask().execute();
     }
 
     @Nullable
@@ -31,5 +55,19 @@ public class PhotoGalleryFragment extends Fragment {
         recyclerView = view.findViewById(R.id.photo_recycler_view);
         recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         return view;
+    }
+
+    private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
+
+        @Override
+        protected List<GalleryItem> doInBackground(Void... voids) {
+            return new FlickrFetchr().fetchItems();
+        }
+
+        @Override
+        protected void onPostExecute(List<GalleryItem> items) {
+            galleryItems = items;
+            setupAdapter();
+        }
     }
 }
