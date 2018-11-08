@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,8 @@ public class PhotoGalleryFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private List<GalleryItem> galleryItems = new ArrayList<>();
+    private GridLayoutManager manager;
+    private int pageCount = 1;
 
     public static PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -53,7 +56,22 @@ public class PhotoGalleryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         recyclerView = view.findViewById(R.id.photo_recycler_view);
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        manager = new GridLayoutManager(getActivity(), 3);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
+                    if ((manager.getChildCount() + manager.findFirstVisibleItemPosition())
+                            >= manager.getItemCount()) {
+                        Log.d(TAG, "Last item now");
+                        new FetchItemsTask().execute();
+                    }
+                }
+            }
+        });
         return view;
     }
 
@@ -61,7 +79,7 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         protected List<GalleryItem> doInBackground(Void... voids) {
-            return new FlickrFetchr().fetchItems();
+            return new FlickrFetchr().fetchItems(pageCount++);
         }
 
         @Override

@@ -52,7 +52,7 @@ public class FlickrFetchr {
         Gson gson = new Gson();
         for (int index = 0; index < photoJsonArray.length(); index++) {
             JSONObject photoJsonObject = photoJsonArray.getJSONObject(index);
-            Log.i(TAG, photoJsonObject.toString());
+            Log.d(TAG, photoJsonObject.toString());
             GalleryItem item = gson.fromJson(photoJsonObject.toString(), GalleryItem.class);
             items.add(item);
         }
@@ -83,7 +83,7 @@ public class FlickrFetchr {
         return new String(getUrlBytes(urlSpec));
     }
 
-    public List<GalleryItem> fetchItems() {
+    public List<GalleryItem> fetchItems(int pageCount) {
         List<GalleryItem> items = new ArrayList<>();
         try {
             String url = Uri.parse("https://api.flickr.com/services/rest/")
@@ -93,11 +93,13 @@ public class FlickrFetchr {
                     .appendQueryParameter("format", "json")
                     .appendQueryParameter("nojsoncallback", "1")
                     .appendQueryParameter("extras", "url_s")
+                    .appendQueryParameter("page", String.valueOf(pageCount))
+                    .appendQueryParameter("per_page", "30")
                     .build().toString();
             String jsonString = getUrlString(url);
             JSONObject jsonBody = new JSONObject(jsonString);
             parseItemsWithGson(items, jsonBody);
-            Log.i(TAG, "Received json : " + jsonString);
+            Log.d(TAG, "Received json : " + jsonString);
         } catch (IOException e) {
             Log.e(TAG, "Failed to fetch items", e);
         } catch (JSONException e) {
